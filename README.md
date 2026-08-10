@@ -4,12 +4,12 @@
 
 <div data-importer="stats" align="center">
   <img
-    src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/stats-output/stats.svg?v=2"
+    src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/stats-output/stats.svg?v=3"
     height="150"
     alt="stats graph"
   />
   <img
-    src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/languages-output/languages.svg?v=2"
+    src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/languages-output/languages.svg?v=3"
     height="150"
     alt="languages graph"
   />
