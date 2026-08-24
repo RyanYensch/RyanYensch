@@ -142,19 +142,35 @@ def api_get(
     if params:
         url = f"{url}?{urlencode(params)}"
 
-    request = Request(
-        url,
-        headers={
+    def make_request(
+        authenticated: bool,
+    ) -> Request:
+        headers = {
             "Accept": "application/vnd.github+json",
-            "Authorization": f"Bearer {TOKEN}",
             "User-Agent": "contribution-language-card",
             "X-GitHub-Api-Version": API_VERSION,
-        },
-    )
+        }
 
+        if authenticated:
+            headers["Authorization"] = f"Bearer {TOKEN}"
+
+        return Request(
+            url,
+            headers=headers,
+        )
+
+    # First try using STATS_TOKEN. This is required for private
+    # repositories and gives us a much larger API rate limit.
     for attempt in range(3):
         try:
-            with urlopen(request, timeout=30) as response:
+            request = make_request(
+                authenticated=True,
+            )
+
+            with urlopen(
+                request,
+                timeout=30,
+            ) as response:
                 return json.load(response)
 
         except HTTPError as error:
@@ -163,22 +179,76 @@ def api_get(
                 errors="replace",
             )
 
-            if error.code >= 500 and attempt < 2:
-                time.sleep(2**attempt)
+            # Some organizations disable classic PAT access.
+            #
+            # If the repository is public, the GitHub REST endpoint can
+            # still be queried without authentication. Retry the exact
+            # same request anonymously so public open-source
+            # contributions are still counted.
+            if (
+                error.code == 403
+                and "forbids access via a personal access token (classic)"
+                in body
+            ):
+                print(
+                    "  Classic PAT blocked by repository owner; "
+                    "retrying as a public request..."
+                )
+
+                try:
+                    public_request = make_request(
+                        authenticated=False,
+                    )
+
+                    with urlopen(
+                        public_request,
+                        timeout=30,
+                    ) as response:
+                        return json.load(response)
+
+                except HTTPError as public_error:
+                    public_body = public_error.read().decode(
+                        "utf-8",
+                        errors="replace",
+                    )
+
+                    raise RuntimeError(
+                        "GitHub API request failed with STATS_TOKEN "
+                        "and could not be read publicly "
+                        f"({public_error.code}) for {url}: "
+                        f"{public_body}"
+                    ) from public_error
+
+                except URLError as public_error:
+                    raise RuntimeError(
+                        "GitHub public API request failed "
+                        f"for {url}: {public_error}"
+                    ) from public_error
+
+            if (
+                error.code >= 500
+                and attempt < 2
+            ):
+                time.sleep(
+                    2**attempt
+                )
                 continue
 
             raise RuntimeError(
-                f"GitHub API request failed "
+                "GitHub API request failed "
                 f"({error.code}) for {url}: {body}"
             ) from error
 
         except URLError as error:
             if attempt < 2:
-                time.sleep(2**attempt)
+                time.sleep(
+                    2**attempt
+                )
                 continue
 
             raise RuntimeError(
-                f"GitHub API request failed for {url}: {error}"
+                "GitHub API request failed "
+                f"for {url}: {error}"
             ) from error
 
     raise RuntimeError(
