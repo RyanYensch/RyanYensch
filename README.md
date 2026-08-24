@@ -9,7 +9,7 @@
     alt="GitHub stats"
   />
   <img
-    src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/languages-output/languages.svg?v=6"
+    src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/languages-output/languages.svg?v=7"
     height="150"
     alt="Repository languages"
   />
@@ -17,7 +17,7 @@
 
 <div align="center">
   <img
-    src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/languages-output/contribution-languages.svg?v=1"
+    src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/languages-output/contribution-languages.svg?v=2"
     height="150"
     alt="Contribution languages"
   />
