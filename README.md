@@ -17,7 +17,7 @@
 
 <div align="center">
   <img
-    src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/languages-output/contribution-languages.svg?v=2"
+    src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/languages-output/contribution-languages.svg?v=3"
     height="150"
     alt="Contribution languages"
   />

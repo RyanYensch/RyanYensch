@@ -766,7 +766,7 @@ def render_svg(
     y="47"
     class="subtitle"
   >
-    Merged PR additions • public + accessible private repos
+    Merged PR additions
   </text>
 
   <clipPath id="barClip">
