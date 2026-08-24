@@ -1,4 +1,4 @@
-name: Generate languages card
+name: Generate languages cards
 
 on:
   schedule:
@@ -23,14 +23,27 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
+      # Your original repository-based language statistics.
+      # Includes private repositories visible to STATS_TOKEN.
+      - name: Generate repository languages card
+        uses: stats-organization/github-readme-stats-action@v2
+        with:
+          card: top-langs
+          options: username=${{ github.repository_owner }}&custom_title=Repository%20Languages&locale=en&hide_title=false&layout=compact&card_width=320&langs_count=5&theme=tokyonight&hide_border=false
+          path: dist/languages.svg
+          token: ${{ secrets.STATS_TOKEN }}
+          fail_on_error: true
+
+      # Your personally authored additions from merged PRs,
+      # including open-source repositories.
       - name: Generate contribution languages card
         env:
           GITHUB_TOKEN: ${{ secrets.STATS_TOKEN }}
           GITHUB_USERNAME: ${{ github.repository_owner }}
         run: |
-          python3 scripts/generate_contribution_languages.py dist/languages.svg
+          python3 scripts/generate_contribution_languages.py dist/contribution-languages.svg
 
-      - name: Push languages.svg to output branch
+      - name: Push language cards to output branch
         uses: crazy-max/ghaction-github-pages@v3.1.0
         with:
           target_branch: languages-output

@@ -6,12 +6,20 @@
   <img
     src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/stats-output/stats.svg?v=4"
     height="150"
-    alt="stats graph"
+    alt="GitHub stats"
   />
   <img
-    src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/languages-output/languages.svg?v=5"
+    src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/languages-output/languages.svg?v=6"
     height="150"
-    alt="languages graph"
+    alt="Repository languages"
+  />
+</div>
+
+<div align="center">
+  <img
+    src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/languages-output/contribution-languages.svg?v=1"
+    height="150"
+    alt="Contribution languages"
   />
 </div>
 
