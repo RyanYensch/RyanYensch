@@ -18,6 +18,9 @@ API_ROOT = "https://api.github.com"
 API_VERSION = "2026-03-10"
 TOP_LANGUAGE_COUNT = 5
 
+class ClassicPatBlocked(RuntimeError):
+    pass
+
 # Language -> GitHub-style colour.
 LANGUAGES: dict[str, tuple[str, str]] = {
     ".ts": ("TypeScript", "#3178c6"),
@@ -142,31 +145,18 @@ def api_get(
     if params:
         url = f"{url}?{urlencode(params)}"
 
-    def make_request(
-        authenticated: bool,
-    ) -> Request:
-        headers = {
+    request = Request(
+        url,
+        headers={
             "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {TOKEN}",
             "User-Agent": "contribution-language-card",
             "X-GitHub-Api-Version": API_VERSION,
-        }
+        },
+    )
 
-        if authenticated:
-            headers["Authorization"] = f"Bearer {TOKEN}"
-
-        return Request(
-            url,
-            headers=headers,
-        )
-
-    # First try using STATS_TOKEN. This is required for private
-    # repositories and gives us a much larger API rate limit.
     for attempt in range(3):
         try:
-            request = make_request(
-                authenticated=True,
-            )
-
             with urlopen(
                 request,
                 timeout=30,
@@ -179,59 +169,20 @@ def api_get(
                 errors="replace",
             )
 
-            # Some organizations disable classic PAT access.
-            #
-            # If the repository is public, the GitHub REST endpoint can
-            # still be queried without authentication. Retry the exact
-            # same request anonymously so public open-source
-            # contributions are still counted.
+            # Some organisations block classic PAT access entirely.
+            # Let the caller decide whether a public fallback is possible.
             if (
                 error.code == 403
                 and "forbids access via a personal access token (classic)"
                 in body
             ):
-                print(
-                    "  Classic PAT blocked by repository owner; "
-                    "retrying as a public request..."
-                )
-
-                try:
-                    public_request = make_request(
-                        authenticated=False,
-                    )
-
-                    with urlopen(
-                        public_request,
-                        timeout=30,
-                    ) as response:
-                        return json.load(response)
-
-                except HTTPError as public_error:
-                    public_body = public_error.read().decode(
-                        "utf-8",
-                        errors="replace",
-                    )
-
-                    raise RuntimeError(
-                        "GitHub API request failed with STATS_TOKEN "
-                        "and could not be read publicly "
-                        f"({public_error.code}) for {url}: "
-                        f"{public_body}"
-                    ) from public_error
-
-                except URLError as public_error:
-                    raise RuntimeError(
-                        "GitHub public API request failed "
-                        f"for {url}: {public_error}"
-                    ) from public_error
+                raise ClassicPatBlocked(url) from error
 
             if (
                 error.code >= 500
                 and attempt < 2
             ):
-                time.sleep(
-                    2**attempt
-                )
+                time.sleep(2**attempt)
                 continue
 
             raise RuntimeError(
@@ -241,9 +192,7 @@ def api_get(
 
         except URLError as error:
             if attempt < 2:
-                time.sleep(
-                    2**attempt
-                )
+                time.sleep(2**attempt)
                 continue
 
             raise RuntimeError(
@@ -385,6 +334,138 @@ def search_merged_pull_requests() -> list[tuple[str, int]]:
     return sorted(pull_requests)
 
 
+def decode_diff_path(
+    value: str,
+) -> str | None:
+    value = value.strip()
+
+    if value == "/dev/null":
+        return None
+
+    # Standard git diff paths use:
+    #
+    #   +++ b/path/to/file.ts
+    #
+    # Remove the b/ prefix.
+    if value.startswith("b/"):
+        value = value[2:]
+
+    return value
+
+
+def get_public_pull_request_files_from_diff(
+    repo: str,
+    number: int,
+) -> list[dict[str, object]]:
+    url = (
+        f"https://github.com/"
+        f"{repo}/pull/{number}.diff"
+    )
+
+    request = Request(
+        url,
+        headers={
+            "Accept": "text/plain",
+            "User-Agent": "contribution-language-card",
+        },
+    )
+
+    diff_text: str | None = None
+
+    for attempt in range(3):
+        try:
+            with urlopen(
+                request,
+                timeout=30,
+            ) as response:
+                diff_text = response.read().decode(
+                    "utf-8",
+                    errors="replace",
+                )
+
+            break
+
+        except HTTPError as error:
+            body = error.read().decode(
+                "utf-8",
+                errors="replace",
+            )
+
+            if (
+                error.code >= 500
+                and attempt < 2
+            ):
+                time.sleep(2**attempt)
+                continue
+
+            raise RuntimeError(
+                "Could not download public PR diff "
+                f"({error.code}) for "
+                f"{repo}#{number}: {body}"
+            ) from error
+
+        except URLError as error:
+            if attempt < 2:
+                time.sleep(2**attempt)
+                continue
+
+            raise RuntimeError(
+                "Could not download public PR diff "
+                f"for {repo}#{number}: {error}"
+            ) from error
+
+    if diff_text is None:
+        raise RuntimeError(
+            f"Could not download public PR diff "
+            f"for {repo}#{number}."
+        )
+
+    additions_by_file: dict[str, int] = defaultdict(int)
+
+    current_filename: str | None = None
+    in_hunk = False
+
+    for line in diff_text.splitlines():
+        # Start of another file.
+        if line.startswith("diff --git "):
+            current_filename = None
+            in_hunk = False
+            continue
+
+        # New/current path for this file.
+        if line.startswith("+++ "):
+            current_filename = decode_diff_path(
+                line[4:]
+            )
+            in_hunk = False
+            continue
+
+        # Start of an actual diff hunk.
+        if line.startswith("@@"):
+            in_hunk = True
+            continue
+
+        # Inside a hunk, every line beginning with "+"
+        # represents one added line.
+        if (
+            in_hunk
+            and current_filename is not None
+            and line.startswith("+")
+        ):
+            additions_by_file[
+                current_filename
+            ] += 1
+
+    return [
+        {
+            "filename": filename,
+            "additions": additions,
+        }
+        for filename, additions
+        in additions_by_file.items()
+    ]
+
+
 def get_pull_request_files(
     repo: str,
     number: int,
@@ -394,13 +475,25 @@ def get_pull_request_files(
     page = 1
 
     while True:
-        result = api_get(
-            f"/repos/{repo}/pulls/{number}/files",
-            {
-                "per_page": 100,
-                "page": page,
-            },
-        )
+        try:
+            result = api_get(
+                f"/repos/{repo}/pulls/{number}/files",
+                {
+                    "per_page": 100,
+                    "page": page,
+                },
+            )
+
+        except ClassicPatBlocked:
+            print(
+                "  Classic PAT blocked by repository owner; "
+                "using public PR diff instead..."
+            )
+
+            return get_public_pull_request_files_from_diff(
+                repo,
+                number,
+            )
 
         if not isinstance(result, list):
             raise RuntimeError(
