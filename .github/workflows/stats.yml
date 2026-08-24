@@ -20,13 +20,17 @@ jobs:
     timeout-minutes: 5
 
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
       - name: Generate stats.svg
-        uses: readme-tools/github-readme-stats-action@v1
+        uses: stats-organization/github-readme-stats-action@v2
         with:
           card: stats
-          options: username=${{ github.repository_owner }}&hide_title=false&hide_rank=false&show_icons=true&include_all_commits=true&disable_animations=false&theme=tokyonight&locale=en&hide_border=true
+          options: username=${{ github.repository_owner }}&hide_title=false&hide_rank=false&show_icons=true&include_all_commits=true&hide=prs,issues&show=prs_authored,prs_merged,prs_reviewed,issues_authored&theme=tokyonight&locale=en&hide_border=true
           path: dist/stats.svg
           token: ${{ secrets.STATS_TOKEN }}
+          fail_on_error: true
 
       - name: Push stats.svg to output branch
         uses: crazy-max/ghaction-github-pages@v3.1.0
