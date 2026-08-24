@@ -9,7 +9,7 @@
     alt="stats graph"
   />
   <img
-    src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/languages-output/languages.svg?v=4"
+    src="https://raw.githubusercontent.com/RyanYensch/RyanYensch/languages-output/languages.svg?v=5"
     height="150"
     alt="languages graph"
   />
