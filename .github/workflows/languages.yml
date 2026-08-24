@@ -20,13 +20,17 @@ jobs:
     timeout-minutes: 5
 
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
       - name: Generate languages.svg
-        uses: readme-tools/github-readme-stats-action@v1
+        uses: stats-organization/github-readme-stats-action@v2
         with:
           card: top-langs
           options: username=${{ github.repository_owner }}&locale=en&hide_title=false&layout=compact&card_width=320&langs_count=5&theme=tokyonight&hide_border=false
           path: dist/languages.svg
           token: ${{ secrets.STATS_TOKEN }}
+          fail_on_error: true
 
       - name: Push languages.svg to output branch
         uses: crazy-max/ghaction-github-pages@v3.1.0
