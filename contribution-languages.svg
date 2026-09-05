@@ -1,0 +1,156 @@
+<svg
+  width="320"
+  height="175"
+  viewBox="0 0 320 175"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-labelledby="titleId descId"
+>
+  <title id="titleId">
+    Contribution Languages
+  </title>
+
+  <desc id="descId">
+    Based on 94 merged pull requests and 442,677 recognised code lines added.
+  </desc>
+
+  <style>
+    .title {
+      font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
+      fill: #70a5fd;
+    }
+
+    .subtitle {
+      font: 400 10px 'Segoe UI', Ubuntu, Sans-Serif;
+      fill: #a9b1d6;
+    }
+
+    .lang {
+      font: 400 10px 'Segoe UI', Ubuntu, Sans-Serif;
+      fill: #38bdae;
+    }
+  </style>
+
+  <rect
+    x="0.5"
+    y="0.5"
+    width="319"
+    height="174"
+    rx="4.5"
+    fill="#1a1b27"
+    stroke="#e4e2e2"
+  />
+
+  <text
+    x="25"
+    y="31"
+    class="title"
+  >
+    Contribution Languages
+  </text>
+
+  <text
+    x="25"
+    y="47"
+    class="subtitle"
+  >
+    Merged PR additions
+  </text>
+
+  <clipPath id="barClip">
+    <rect
+      x="25"
+      y="61"
+      width="270"
+      height="8"
+      rx="4"
+    />
+  </clipPath>
+
+  <g clip-path="url(#barClip)">
+    <rect x="25.00" y="61" width="128.65" height="8" fill="#3178c6" /><rect x="153.65" y="61" width="118.85" height="8" fill="#f1e05a" /><rect x="272.49" y="61" width="8.89" height="8" fill="#555555" /><rect x="281.38" y="61" width="6.48" height="8" fill="#3572A5" /><rect x="287.86" y="61" width="4.15" height="8" fill="#f34b7d" /><rect x="292.02" y="61" width="2.98" height="8" fill="#6e7681" />
+  </g>
+
+  
+            <g transform="translate(25, 94)">
+              <circle
+                cx="5"
+                cy="5"
+                r="4"
+                fill="#3178c6"
+              />
+              <text
+                x="15"
+                y="9"
+                class="lang"
+              >
+                TypeScript 47.65%
+              </text>
+            </g>
+            
+            <g transform="translate(25, 118)">
+              <circle
+                cx="5"
+                cy="5"
+                r="4"
+                fill="#f1e05a"
+              />
+              <text
+                x="15"
+                y="9"
+                class="lang"
+              >
+                JavaScript 44.02%
+              </text>
+            </g>
+            
+            <g transform="translate(25, 142)">
+              <circle
+                cx="5"
+                cy="5"
+                r="4"
+                fill="#555555"
+              />
+              <text
+                x="15"
+                y="9"
+                class="lang"
+              >
+                C 3.29%
+              </text>
+            </g>
+            
+            <g transform="translate(175, 94)">
+              <circle
+                cx="5"
+                cy="5"
+                r="4"
+                fill="#3572A5"
+              />
+              <text
+                x="15"
+                y="9"
+                class="lang"
+              >
+                Python 2.40%
+              </text>
+            </g>
+            
+            <g transform="translate(175, 118)">
+              <circle
+                cx="5"
+                cy="5"
+                r="4"
+                fill="#f34b7d"
+              />
+              <text
+                x="15"
+                y="9"
+                class="lang"
+              >
+                C++ 1.54%
+              </text>
+            </g>
+            
+</svg>
